@@ -1,6 +1,7 @@
 <template>
   <main class="bg-grid ly-full-width">
-    <MondaiList @selectMondai="selectMondaiFromCat" :selectedCat="selectedCat" :computedMondai="computedMondai" v-if="!status.isPlaying"/>
+
+    <MondaiList @selectMondai="selectMondaiFromCat" :selectedCat="selectedCat" :computedMondai="computedMondai" :mondaiArray="mondaiArray" v-if="!status.isPlaying"/>
     <Play v-if="status.isPlaying" :setting="setting" :status="status" @update="updateStatus" @showRes="showRes"/>
   </main>
 

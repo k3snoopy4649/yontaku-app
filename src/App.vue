@@ -676,6 +676,9 @@ align-items: center;
       margin: auto;
       background: #ea3264f7;
     }
+    &.showres-btn{
+      background: #ea3264f7;
+    }
     &.unknown-btn {
       background: #248dc5ab;
     }
@@ -704,5 +707,19 @@ align-items: center;
   padding: 24px;
   text-align: left;
   margin-bottom: 24px;
+}
+.form-item{
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  label{
+    @include fz(14);
+  }
+  input[type="text"]{
+    border-bottom: 1px solid rgba(#333,.1);
+    width: 90%;
+    @include fz(14);
+  }
 }
 </style>

@@ -44,7 +44,7 @@
         <button class="prev-btn" v-if="playStatus.index != 0" @click="prevBtn">
           前の問題
         </button>
-        <button class="giveup-btn" @click.prevent="showRes" v-if="isLastQuest">
+        <button class="showres-btn" @click.prevent="showRes" v-if="isLastQuest">
           結果をみる
         </button>
         <button class="unknown-btn" @click.prevent="selectOption(false)" v-if="!isLastQuest">
@@ -62,7 +62,7 @@
         <p v-html="exp"></p>
       </div>
 
-      <div class="quest-ui">
+      <div class="quest-ui" v-if="data.length != playStatus.index && !isLastQuest">
         <button class="giveup-btn" @click.prevent="showRes">終了する</button>
       </div>
     </div>
