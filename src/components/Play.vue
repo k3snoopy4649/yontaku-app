@@ -3,17 +3,26 @@
     <div class="block-inner" v-if="!playStatus.showRes">
       <div class="quest-status">
         <p class="quest-num">
-          Q.{{ playStatus["index"]+1 }}/{{ data.length }}問（正解{{
+          Q.{{ playStatus["index"] + 1 }}/{{ data.length }}問（正解{{
             playStatus.correct.length
           }}問）
         </p>
         <p class="quest-id">ID:{{ id }}</p>
         <h3 class="quest-name">{{ title }}</h3>
+        <div class="time-bar br-32 box-shadow" v-if="setting.time">
+          <span></span>
+        </div>
       </div>
       <ul class="ly-list-cont">
         <div class="icons">
-          <span class="icon-correct" v-if="playStatus.showExp && isCorrect">◯</span>
-          <span class="icon-false" v-if="playStatus.showExp && !isCorrect &&isCorrect != null">×</span>
+          <span class="icon-correct" v-if="playStatus.showExp && isCorrect"
+            >◯</span
+          >
+          <span
+            class="icon-false"
+            v-if="playStatus.showExp && !isCorrect && isCorrect != null"
+            >×</span
+          >
         </div>
         <li
           class="block-list-item br-32 box-shadow bg-white"
@@ -47,7 +56,11 @@
         <button class="showres-btn" @click.prevent="showRes" v-if="isLastQuest">
           結果をみる
         </button>
-        <button class="unknown-btn" @click.prevent="selectOption(false)" v-if="!isLastQuest">
+        <button
+          class="unknown-btn"
+          @click.prevent="selectOption(false)"
+          v-if="!isLastQuest"
+        >
           答えをみる
         </button>
         <button
@@ -62,7 +75,10 @@
         <p v-html="exp"></p>
       </div>
 
-      <div class="quest-ui" v-if="data.length != playStatus.index && !isLastQuest">
+      <div
+        class="quest-ui"
+        v-if="data.length != playStatus.index && !isLastQuest"
+      >
         <button class="giveup-btn" @click.prevent="showRes">終了する</button>
       </div>
     </div>
@@ -70,10 +86,10 @@
       <div class="title-bg-white">
         <h2>問題：{{ setting.title }}</h2>
       </div>
-        <h3 class="result-message">{{message}}</h3>
+      <h3 class="result-message">{{ message }}</h3>
       <div class="result-area">
         <div class="score">
-            <canvas id="myChart" width="400" height="400"></canvas>
+          <canvas id="myChart" width="400" height="400"></canvas>
           <div class="score-inner">
             <p class="mondai-num">
               全<span>{{ data.length }}</span
@@ -98,7 +114,8 @@
             <div
               class="mondai-item-inner box-shadow bg-white close"
               v-if="mondai_failed"
-              :id="'ID' + mondai_failed.id" @click="showAnswer('ID' + mondai_failed.id)"
+              :id="'ID' + mondai_failed.id"
+              @click="showAnswer('ID' + mondai_failed.id)"
             >
               <div class="mondai-text">
                 <p class="num">{{ i }}</p>
@@ -109,7 +126,6 @@
                   class="option"
                   v-for="option in mondai_failed.options"
                   :key="option"
-                  
                 >
                   {{ option }}
                 </p>
@@ -117,7 +133,7 @@
               <div class="exp-text">
                 <p class="title">
                   <span>正解</span
-                  >{{ mondai_failed.options[mondai_failed.ans-1] }}
+                  >{{ mondai_failed.options[mondai_failed.ans - 1] }}
                 </p>
                 <p class="text" v-html="mondai_failed.exp"></p>
               </div>
@@ -140,14 +156,16 @@ Chart.register(DoughnutController, ArcElement, Tooltip);
 import { ref } from "@vue/reactivity";
 import { computed, onMounted, watchEffect } from "@vue/runtime-core";
 import GetLocal from "../composable/GetLocal";
+import RandomArray from "../composable/RandomArray";
 export default {
   props: ["setting", "status"],
   setup(props, { emit }) {
-    const isLastQuest = ref(false)
-    const isCorrect = ref(null)
+    const isLastQuest = ref(false);
+    const isCorrect = ref(null);
     const ctx = ref(null);
-    const message = ref(null)
+    const message = ref(null);
     const { getLocal } = GetLocal();
+    const { getRandomArr } = RandomArray();
     const playStatus = ref(
       getLocal("status").playStatus || {
         index: 0,
@@ -164,38 +182,62 @@ export default {
         if (!playStatus.value.correct.includes(i)) return el;
       });
     });
-    const scrollTop = () =>{
-
+    const scrollTop = () => {
       window.scrollTo({
         top: 0,
         left: 0,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
+    };
+
+    //タイムバーの初期値
+    const posLef = ref(-100)
+    const timeLeft = ref(0)
+    const timer = ref(null)
+    const timerEl = ref(null)
+    const subNum = ref(null||Number(100/props.setting.time))
+    const startInterval = () =>{
+      timeLeft.value = props.setting.time
+      timer.value = setInterval(()=>{
+        if(timeLeft.value != 0){
+          timerEl.value = document.querySelector(".time-bar span")
+          posLef.value += subNum.value
+          timerEl.value.style.left = posLef.value + "%"
+          timeLeft.value--
+          console.log(timeLeft.value)
+        } else {
+          stopInterval()
+          selectOption(false)
+        }
+      },1000)
     }
+    const stopInterval = () =>{
+      clearInterval(timer.value)
+      posLef.value = -100
+      timeLeft.value = 0
+      timerEl.value = document.querySelector(".time-bar span")
+      posLef.value = posLef.value
+    }
+    if(props.setting.time && props.status.isPlaying && !playStatus.value.showRes && !playStatus.value.showExp){
+      startInterval()
+    }
+
     const quest = ref(data.value[playStatus.value.index]);
     const title = ref(quest.value.title);
     const exp = ref(quest.value.exp);
     const options = ref(quest.value.options);
     const id = ref(quest.value.id);
     const score = ref(playStatus.value.correct.length || null);
-    const randomArray = (arr) => {
-      for (let i = arr.length - 1; i > 0; i--) {
-        let r = Math.floor(Math.random() * (i + 1));
-        let tmp = arr[i];
-        arr[i] = arr[r];
-        arr[r] = tmp;
-      }
-    };
     const computedOptions = computed(() => {
       let res = options.value.reduce((arr, data, i) => {
         arr[i] = [];
         arr[i].push(data);
-        Number(quest.value["ans"])-1 === i
+        Number(quest.value["ans"]) - 1 === i
           ? arr[i].push(true)
           : arr[i].push(false);
         return arr;
       }, []);
-      randomArray(res);
+      getRandomArr(res);
       return res;
     });
     const updateStatus = () => {
@@ -211,22 +253,27 @@ export default {
       emit("update", props.status);
     };
     const nextBtn = () => {
+      stopInterval()
       playStatus.value.index++;
       updateStatus();
+      if(!playStatus.value.showExp) startInterval()
     };
     const prevBtn = () => {
+      stopInterval()
       playStatus.value.index--;
       updateStatus();
+      if(!playStatus.value.showExp) startInterval()
     };
     const selectOption = (correct) => {
+      stopInterval()
       if (playStatus.value.isAnswered.includes(playStatus.value.index)) return;
 
       playStatus.value.showExp = !playStatus.value.showExp;
       playStatus.value.isAnswered.push(playStatus.value.index);
-      
-        isCorrect.value = correct
-      if(correct){
-        playStatus.value.correct.push(playStatus.value.index)
+
+      isCorrect.value = correct;
+      if (correct) {
+        playStatus.value.correct.push(playStatus.value.index);
       } else {
         playStatus.value.false.push(playStatus.value.index);
       }
@@ -234,7 +281,7 @@ export default {
       emit("update", props.status);
     };
     onMounted(() => {
-      scrollTop()
+      scrollTop();
       if (!props.status.playStatus) {
         updateStatus();
       }
@@ -244,6 +291,7 @@ export default {
       }
     });
     const retry = () => {
+      startInterval()
       playStatus.value = {
         index: 0,
         isAnswered: [],
@@ -264,6 +312,7 @@ export default {
       };
       props.status.isPlaying = false;
       props.status.playStatus = playStatus.value;
+      scrollTop();
       emit("update", props.status);
     };
     const addGraph = () => {
@@ -287,10 +336,11 @@ export default {
       });
     };
     const showRes = () => {
+      stopInterval()
       score.value = playStatus.value.correct.length;
       playStatus.value.showRes = !playStatus.value.showRes;
       updateStatus();
-      scrollTop()
+      scrollTop();
       message.value = evalScore();
       setTimeout(() => {
         addGraph();
@@ -301,35 +351,35 @@ export default {
       if (!trgElm.classList.contains("close")) return;
       trgElm.classList.remove("close");
     };
-    const evalScore = () =>{
-      const _score = ref(score.value / data.value.length * 100)
-      switch(_score.value){
+    const evalScore = () => {
+      const _score = ref((score.value / data.value.length) * 100);
+      switch (_score.value) {
         case _score.value === 100:
-          return "完璧！"
+          return "完璧！";
           break;
         case _score.value >= 80:
-          return "素晴らしい"
+          return "素晴らしい";
           break;
         case _score.value >= 70:
-          return "惜しい！"
+          return "惜しい！";
           break;
         case _score.value >= 60:
-          return "ギリギリセーフ！"
+          return "ギリギリセーフ！";
           break;
         case _score.value >= 30:
-          return "もう少し頑張ろう！"
+          return "もう少し頑張ろう！";
           break;
         default:
-          return "伸び代しかない！！"
+          return "伸び代しかない！！";
       }
-    }
-    watchEffect(()=>{
-      if(playStatus.value.index+1 === data.value.length){
-        isLastQuest.value = true
-      } else  {
-        isLastQuest.value = false
+    };
+    watchEffect(() => {
+      if (playStatus.value.index + 1 === data.value.length) {
+        isLastQuest.value = true;
+      } else {
+        isLastQuest.value = false;
       }
-    })
+    });
     return {
       isLastQuest,
       title,

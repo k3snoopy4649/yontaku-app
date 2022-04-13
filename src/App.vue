@@ -719,7 +719,26 @@ align-items: center;
   input[type="text"]{
     border-bottom: 1px solid rgba(#333,.1);
     width: 90%;
-    @include fz(14);
+    @include fz(16);
+  }
+}
+.time-bar{
+  width: 100%;
+  height: 4px;
+  background: rgba($themeColor, $alpha: .1);
+  margin-top: 16px;
+  position: relative;
+  overflow: hidden;
+  span{
+    position: absolute;
+    left: -100%;
+    top: 0;
+    bottom: 0;
+    height: 100%;
+    width: 100%;
+    background: $gradBlue;
+    transition: .3s;
+    animation-timing-function: linear;
   }
 }
 </style>

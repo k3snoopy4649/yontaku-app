@@ -1,6 +1,6 @@
 <template>
   <div class="block-content">
-    <div class="block-inner">
+    <div class="block-inner" v-if="computedMondai">
       <h3 class="block-title-h3">問題を抽出</h3>
         <div class="form-item box-shadow bg-white">
           <input
@@ -69,19 +69,16 @@ export default {
         "filteredMondai":[]
       }
       props.mondaiArray.filter((el) => {
-        keywords.value.split(" ").map((keyword) => {
+        keywords.value.split(" "||"　"||",").map((keyword) => {
           if (JSON.stringify(el).includes(keyword)) {
-            console.log(keyword,el);
             return filteredMondai.value["filteredMondai"].push(el);
           }
         });
       });
     };
     watchEffect(() => {
-      console.log(filteredMondai.value)
     });
     onMounted(() => {
-      console.log(props.computedMondai);
       });
     return { selectMondaiFromCat, keywords, filteredMondai, filterMondai };
   },
