@@ -102,7 +102,7 @@
           </div>
         </div>
       </div>
-      <div class="mondai-list-cont">
+      <div class="mondai-list-cont" v-if="score!=data.length">
         <h3 class="title">間違えた問題一覧</h3>
         <p class="note">クリックすると解答が確認できます。</p>
         <ul class="mondai-list">
@@ -197,6 +197,7 @@ export default {
     const timerEl = ref(null)
     const subNum = ref(null||Number(100/props.setting.time))
     const startInterval = () =>{
+      if(!props.setting.time && !props.status.isPlaying && playStatus.value.showRes && playStatus.value.showExp) return
       timeLeft.value = props.setting.time
       timer.value = setInterval(()=>{
         if(timeLeft.value != 0){
@@ -317,6 +318,8 @@ export default {
     };
     const addGraph = () => {
       ctx.value = document.getElementById("myChart");
+      const correctNum = score.value
+      const falseNum = data.value.length - score.value
       const createChart = new Chart(ctx.value, {
         type: "doughnut",
         options: {
@@ -327,7 +330,7 @@ export default {
           datasets: [
             {
               label: "結果",
-              data: [score.value, data.value.length],
+              data: [correctNum, falseNum],
               backgroundColor: ["#328bea", "#8b8b8b"],
               hoverOffset: 1,
             },
@@ -353,24 +356,18 @@ export default {
     };
     const evalScore = () => {
       const _score = ref((score.value / data.value.length) * 100);
-      switch (_score.value) {
-        case _score.value === 100:
-          return "完璧！";
-          break;
-        case _score.value >= 80:
-          return "素晴らしい";
-          break;
-        case _score.value >= 70:
-          return "惜しい！";
-          break;
-        case _score.value >= 60:
-          return "ギリギリセーフ！";
-          break;
-        case _score.value >= 30:
-          return "もう少し頑張ろう！";
-          break;
-        default:
-          return "伸び代しかない！！";
+      if(_score.value === 100){
+return "完璧！";
+      } else if(_score.value >= 80){
+return "素晴らしい";
+      } else if(_score.value >= 70){
+return "惜しい！";
+      } else if(_score.value >= 60){
+return "ギリギリセーフ！";
+      } else if(_score.value >= 30){
+return "もう少し頑張ろう！";
+      } else{
+return "伸び代しかない！！";
       }
     };
     watchEffect(() => {

@@ -68,6 +68,8 @@ export default {
       filteredMondai.value = {
         "filteredMondai":[]
       }
+
+      // 本番公開の時はmondaiのプロパティをかます。
       props.mondaiArray.filter((el) => {
         keywords.value.split(" "||"　"||",").map((keyword) => {
           if (JSON.stringify(el).includes(keyword)) {
